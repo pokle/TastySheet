@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Editable table</title>
+</head>
+<body>
+
+  <table>
+    <thead>
+      <tr data-bind="foreach: columns">
+        <th data-bind="text: $data"></th>
+      </tr>
+    </thead>
+    <tbody data-bind="foreach: rows">
+      <tr data-bind="foreach: $root.columns">
+        <td contenteditable="true" data-bind="text: $parent[$data]"></td>
+      </tr>
+    </tbody>
+  </table>
+  
+
+  <script src="knockout-2.0.0.js" type="text/javascript" charset="utf-8"></script>
+  <script type="text/javascript">
+    var appVM = {
+      columns: ko.observableArray(['title', 'owner', 'stage']),
+      rows: [
+        {title: "Brush your teeth", owner: "Tushar", stage: 'start'},
+        {title: "Stretch your back", owner: "Sergey", stage: 'movement'},
+        {title: "Sell your app", owner: "Tushar", stage: 'finish'},
+      ]
+    };
+    ko.applyBindings(appVM);
+  </script>
+  
+  <style type="text/css">
+    table {
+      border: 1px solid #999;
+      border-collapse:collapse;
+    }
+    
+    td {
+      padding: 5px;
+      border: 1px solid #999;
+    }
+    
+  </style>
+  
+</body>
+</html>
