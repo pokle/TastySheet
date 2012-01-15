@@ -4,6 +4,8 @@
 	<title>Editable table</title>
 </head>
 <body>
+  <h1>Tush editable table</h2>
+  <p>A table that you can edit almost like a spreadsheet</p>
 
   <table contenteditable="false">
     <thead contenteditable="false">
@@ -22,6 +24,7 @@
   </table>
   <button data-bind="click: addrow">Add</button>
 
+
   <script src="jquery-1.7.1.min.js" type="text/javascript" charset="utf-8"></script>
   <script src="jwerty.js" type="text/javascript" charset="utf-8"></script>
   <script src="knockout-2.0.0.js" type="text/javascript" charset="utf-8"></script>
@@ -33,9 +36,9 @@
         {id: 'estimate', wide: false}
       ]),
       rows: ko.observableArray([
-        {title: "Brush your teeth", owner: "Tushar", stage: 'start'},
-        {title: "Stretch your back", owner: "Sergey", stage: 'movement'},
-        {title: "Sell your app", owner: "Tushar", stage: 'finish'},
+        {title: "Brush your teeth", owner: "Tushar", estimate: 55},
+        {title: "Stretch your back", owner: "Sergey", estimate: 43},
+        {title: "Sell your app", owner: "Tushar", estimate: 3},
       ]),
       addrow: function() {
         appVM.rows.push({title: ko.observable("<title>"), owner: "<owner>", stage: 'start'});
@@ -53,28 +56,43 @@
     };
     ko.applyBindings(appVM);
 
-    var key = { left: 37, right: 39, up: 38, down: 40, tab: 9};
+    var key = { left: 37, right: 39, up: 38, down: 40, tab: 9, enter: 13};
     
     $('.cell').live('click', function(e) {
       appVM.selectCurrentCell();
     });
+
+
+    var findCellUp = function(from) {
+      var column = $(from).prevAll('td').length;
+      return $(from).parent('tr').prev('tr').children('td').get(column);
+    }
+
+    var findCellDown = function(from) {
+      var column = $(from).prevAll('td').length;
+      return $(from).parent('tr').next('tr').children('td').get(column);
+    }
     
     $('.cell').live('keydown', function(e) {
       var to;
 
       if (e.which === key.tab) {
-        // Allow default tab, shift-tab behaviour, but select cell
+        // Allow default tab, shift-tab behaviour, but select cell afterwards
         setTimeout(appVM.selectCurrentCell, 0);
       } else if (e.metaKey && e.which === key.right) {
         to = $(e.target).next('td');
       } else if (e.metaKey && e.which === key.left) {
         to = $(e.target).prev('td');
       } else if (e.metaKey && e.which === key.up) {
-        var column = $(e.target).prevAll('td').length;
-        to = $(e.target).parent('tr').prev('tr').children('td').get(column);
+        to = findCellUp(e.target);
       } else if (e.metaKey && e.which === key.down) {
-        var column = $(e.target).prevAll('td').length;
-        to = $(e.target).parent('tr').next('tr').children('td').get(column);
+        to = findCellDown(e.target);
+      } else if (e.which === key.enter && !(e.shiftKey || e.altKey || e.metaKey)) {
+        to = findCellDown(e.target);
+        if (!to) {
+          appVM.addrow();
+          to = findCellDown(e.target);
+        }
       } else {
         // do nothing.
       }
@@ -87,6 +105,7 @@
     
 
   </script>
+  
   
   <style type="text/css">
     table {
