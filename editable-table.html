@@ -15,14 +15,12 @@
       <tr data-bind="foreach: $root.columns">
           <td class="cell" contenteditable="true" tabindex="0" 
                data-bind="text: $parent[id], 
-                          css: { widecell: wide },
-                          event: {focus: function(){$root.focused($parent, event);}}">
+                          css: { widecell: wide }">
           </td>
       </tr>
     </tbody>
   </table>
   <button data-bind="click: addrow">Add</button>
-  <button data-bind="click: focusRandom">Random cell</button>
 
   <script src="jquery-1.7.1.min.js" type="text/javascript" charset="utf-8"></script>
   <script src="jwerty.js" type="text/javascript" charset="utf-8"></script>
@@ -39,28 +37,54 @@
         {title: "Stretch your back", owner: "Sergey", stage: 'movement'},
         {title: "Sell your app", owner: "Tushar", stage: 'finish'},
       ]),
-      focused: function(row, ev) {
-        console.log(ev, row);
-      },
-      focusRandom: function() {
-        var elems = document.getElementsByTagName('td');
-        elems[Math.round(Math.random()*(elems.length-1))].focus();
-      },
       addrow: function() {
-        appVM.rows.push({title: ko.observable("..."), owner: "...", stage: 'start'});
+        appVM.rows.push({title: ko.observable("<title>"), owner: "<owner>", stage: 'start'});
+      },
+      moveTo: function(to) {
+        if (to.length > 0) {
+          to.get(0).focus();
+          appVM.selectCurrentCell();
+        }
+        return false;
+      },
+      selectCurrentCell: function() {
+        document.execCommand('selectAll', false, null);
       }
     };
     ko.applyBindings(appVM);
 
-    jwerty.key('CMD+]/CTRL+]', function(e) {
-      $(e.target).next('td').get(0).focus();
-      return false;
+    var key = { left: 37, right: 39, up: 38, down: 40, tab: 9};
+    
+    $('.cell').live('click', function(e) {
+      appVM.selectCurrentCell();
     });
+    
+    $('.cell').live('keydown', function(e) {
+      var to;
 
-    jwerty.key('CMD+[/CTRL+[', function(e) {
-      $(e.target).prev('td').get(0).focus();
-      return false;
+      if (e.which === key.tab) {
+        // Allow default tab, shift-tab behaviour, but select cell
+        setTimeout(appVM.selectCurrentCell, 0);
+      } else if (e.metaKey && e.which === key.right) {
+        to = $(e.target).next('td');
+      } else if (e.metaKey && e.which === key.left) {
+        to = $(e.target).prev('td');
+      } else if (e.metaKey && e.which === key.up) {
+        var column = $(e.target).prevAll('td').length;
+        to = $(e.target).parent('tr').prev('tr').children('td').get(column);
+      } else if (e.metaKey && e.which === key.down) {
+        var column = $(e.target).prevAll('td').length;
+        to = $(e.target).parent('tr').next('tr').children('td').get(column);
+      } else {
+        // do nothing.
+      }
+      
+      if (to) {
+        appVM.moveTo($(to));
+        e.preventDefault();
+      }
     });
+    
 
   </script>
   
