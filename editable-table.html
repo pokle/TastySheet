@@ -4,8 +4,12 @@
 	<title>Editable table</title>
 </head>
 <body>
-  <h1>Tush editable table</h2>
-  <p>A table that you can edit almost like a spreadsheet</p>
+  <h1>Contenteditable table with spreadsheet like navigation</h2>
+  <p>Focus on a cell, and then use spreadsheet like keys to move around - albeit while holding
+    down either CONTROL or COMMAND (Apple)</p>
+  <p>ENTER also moves down, with the added benefit of creating more rows
+    when you hit the end</p>
+  <p>Also try TAB, and SHIFT-TAB to move horizontally</p>
 
   <table contenteditable="false">
     <thead contenteditable="false">
@@ -52,9 +56,21 @@
       },
       selectCurrentCell: function() {
         document.execCommand('selectAll', false, null);
+      },
+      findCellUp: function(from) {
+        var column = $(from).prevAll('td').length;
+        return $(from).parent('tr').prev('tr').children('td').get(column);
+      },
+      findCellDown: function(from) {
+        var column = $(from).prevAll('td').length;
+        return $(from).parent('tr').next('tr').children('td').get(column);
       }
     };
     ko.applyBindings(appVM);
+
+    //
+    // Keyboard events
+    //
 
     var key = { left: 37, right: 39, up: 38, down: 40, tab: 9, enter: 13};
     
@@ -62,20 +78,8 @@
       appVM.selectCurrentCell();
     });
 
-
-    var findCellUp = function(from) {
-      var column = $(from).prevAll('td').length;
-      return $(from).parent('tr').prev('tr').children('td').get(column);
-    }
-
-    var findCellDown = function(from) {
-      var column = $(from).prevAll('td').length;
-      return $(from).parent('tr').next('tr').children('td').get(column);
-    }
-    
     $('.cell').live('keydown', function(e) {
       var to;
-      console.log(e);
       if (e.which === key.tab) {
         // Allow default tab, shift-tab behaviour, but select cell afterwards
         setTimeout(appVM.selectCurrentCell, 0);
@@ -85,18 +89,19 @@
         } else if (e.which === key.left) {
           to = $(e.target).prev('td');
         } else if (e.which === key.up) {
-          to = findCellUp(e.target);
+          to = appVM.findCellUp(e.target);
         } else if (e.which === key.down) {
-          to = findCellDown(e.target);
+          to = appVM.findCellDown(e.target);
         }
       } else if (e.which === key.enter && !(e.shiftKey || e.altKey || e.metaKey)) {
-        to = findCellDown(e.target);
+        to = appVM.findCellDown(e.target);
         if (!to) {
           appVM.addrow();
-          to = findCellDown(e.target);
+          to = appVM.findCellDown(e.target);
         }
       } else {
-        // do nothing.
+        // un-recognised key combo
+        return true;
       }
       
       if (to) {
@@ -132,7 +137,6 @@
     .widecell {
       min-width: 200px;
       max-width: 400px;
-      background-color: #facedd;
     }
     
   </style>
