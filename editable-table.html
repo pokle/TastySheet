@@ -75,18 +75,20 @@
     
     $('.cell').live('keydown', function(e) {
       var to;
-
+      console.log(e);
       if (e.which === key.tab) {
         // Allow default tab, shift-tab behaviour, but select cell afterwards
         setTimeout(appVM.selectCurrentCell, 0);
-      } else if (e.metaKey && e.which === key.right) {
-        to = $(e.target).next('td');
-      } else if (e.metaKey && e.which === key.left) {
-        to = $(e.target).prev('td');
-      } else if (e.metaKey && e.which === key.up) {
-        to = findCellUp(e.target);
-      } else if (e.metaKey && e.which === key.down) {
-        to = findCellDown(e.target);
+      } else if (e.metaKey || e.ctrlKey) {
+        if (e.which === key.right) {
+          to = $(e.target).next('td');
+        } else if (e.which === key.left) {
+          to = $(e.target).prev('td');
+        } else if (e.which === key.up) {
+          to = findCellUp(e.target);
+        } else if (e.which === key.down) {
+          to = findCellDown(e.target);
+        }
       } else if (e.which === key.enter && !(e.shiftKey || e.altKey || e.metaKey)) {
         to = findCellDown(e.target);
         if (!to) {
