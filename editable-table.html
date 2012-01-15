@@ -5,42 +5,89 @@
 </head>
 <body>
 
-  <table>
-    <thead>
+  <table contenteditable="false">
+    <thead contenteditable="false">
       <tr data-bind="foreach: columns">
-        <th data-bind="text: $data"></th>
+        <th data-bind="text: id"></th>
       </tr>
     </thead>
-    <tbody data-bind="foreach: rows">
+    <tbody data-bind="foreach: rows" keyup="alert('a')">
       <tr data-bind="foreach: $root.columns">
-        <td contenteditable="true" data-bind="text: $parent[$data]"></td>
+          <td class="cell" contenteditable="true" tabindex="0" 
+               data-bind="text: $parent[id], 
+                          css: { widecell: wide },
+                          event: {focus: function(){$root.focused($parent, event);}}">
+          </td>
       </tr>
     </tbody>
   </table>
-  
+  <button data-bind="click: addrow">Add</button>
+  <button data-bind="click: focusRandom">Random cell</button>
 
+  <script src="jquery-1.7.1.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="jwerty.js" type="text/javascript" charset="utf-8"></script>
   <script src="knockout-2.0.0.js" type="text/javascript" charset="utf-8"></script>
   <script type="text/javascript">
     var appVM = {
-      columns: ko.observableArray(['title', 'owner', 'stage']),
-      rows: [
+      columns: ko.observableArray([
+        {id: 'title', wide: true}, 
+        {id: 'owner', wide: false}, 
+        {id: 'estimate', wide: false}
+      ]),
+      rows: ko.observableArray([
         {title: "Brush your teeth", owner: "Tushar", stage: 'start'},
         {title: "Stretch your back", owner: "Sergey", stage: 'movement'},
         {title: "Sell your app", owner: "Tushar", stage: 'finish'},
-      ]
+      ]),
+      focused: function(row, ev) {
+        console.log(ev, row);
+      },
+      focusRandom: function() {
+        var elems = document.getElementsByTagName('td');
+        elems[Math.round(Math.random()*(elems.length-1))].focus();
+      },
+      addrow: function() {
+        appVM.rows.push({title: ko.observable("..."), owner: "...", stage: 'start'});
+      }
     };
     ko.applyBindings(appVM);
+
+    jwerty.key('CMD+]/CTRL+]', function(e) {
+      $(e.target).next('td').get(0).focus();
+      return false;
+    });
+
+    jwerty.key('CMD+[/CTRL+[', function(e) {
+      $(e.target).prev('td').get(0).focus();
+      return false;
+    });
+
   </script>
   
   <style type="text/css">
     table {
       border: 1px solid #999;
       border-collapse:collapse;
+      width: 300px;
     }
     
-    td {
-      padding: 5px;
+    th {
+      background-color: #eeeeee;
+    }
+    
+    .cell {
+      padding: 4px;
       border: 1px solid #999;
+      overflow: auto;
+      
+      min-width: 100px;
+      max-width: 100px;
+    }
+    
+    .widecell {
+      min-width: 200px;
+      max-width: 400px;
+      background-color: #facedd;
     }
     
   </style>
