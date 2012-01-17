@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Editable table</title>
+</head>
+<body>
+  <h1>HTML5 contenteditable table with spreadsheet like navigation</h2>
+  <p>Focus on a cell, and then use spreadsheet like keys to move around - albeit while holding
+    down either CONTROL or COMMAND (Apple)</p>
+  <p>ENTER also moves down, with the added benefit of creating more rows
+    when you hit the end</p>
+  <p>Also try TAB, and SHIFT-TAB to move horizontally</p>
+
+  <table contenteditable="false">
+    <thead contenteditable="false">
+      <tr data-bind="foreach: columns">
+        <th data-bind="text: id"></th>
+      </tr>
+    </thead>
+    <tbody data-bind="foreach: rows" keyup="alert('a')">
+      <tr data-bind="foreach: $root.columns">
+          <td class="cell" contenteditable="true" tabindex="0" 
+               data-bind="text: $parent[id], 
+                          css: { widecell: wide }">
+          </td>
+      </tr>
+    </tbody>
+  </table>
+  <button data-bind="click: addrow">Add</button>
+
+
+  <script src="jquery-1.7.1.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="knockout-2.0.0.js" type="text/javascript" charset="utf-8"></script>
+  <script type="text/javascript">
+    var appVM = {
+      columns: ko.observableArray([
+        {id: 'title', wide: true}, 
+        {id: 'owner', wide: false}, 
+        {id: 'estimate', wide: false}
+      ]),
+      rows: ko.observableArray([
+        {title: "Brush your teeth", owner: "Tushar", estimate: 55},
+        {title: "Stretch your back", owner: "Sergey", estimate: 43},
+        {title: "Sell your app", owner: "Tushar", estimate: 3},
+      ]),
+      addrow: function() {
+        appVM.rows.push({title: ko.observable("<title>"), owner: "<owner>", stage: 'start'});
+      },
+      moveTo: function(to) {
+        if (to.length > 0) {
+          to.get(0).focus();
+          appVM.selectCurrentCell();
+        }
+        return false;
+      },
+      selectCurrentCell: function() {
+        document.execCommand('selectAll', false, null);
+      },
+      findCellUp: function(from) {
+        var column = $(from).prevAll('td').length;
+        return $(from).parent('tr').prev('tr').children('td').get(column);
+      },
+      findCellDown: function(from) {
+        var column = $(from).prevAll('td').length;
+        return $(from).parent('tr').next('tr').children('td').get(column);
+      }
+    };
+    ko.applyBindings(appVM);
+
+    //
+    // Keyboard events
+    //
+
+    var key = { left: 37, right: 39, up: 38, down: 40, tab: 9, enter: 13};
+    
+    $('.cell').live('click', function(e) {
+      appVM.selectCurrentCell();
+    });
+
+    $('.cell').live('keydown', function(e) {
+      var to;
+      if (e.which === key.tab) {
+        // Allow default tab, shift-tab behaviour, but select cell afterwards
+        setTimeout(appVM.selectCurrentCell, 0);
+      } else if (e.metaKey || e.ctrlKey) {
+        if (e.which === key.right) {
+          to = $(e.target).next('td');
+        } else if (e.which === key.left) {
+          to = $(e.target).prev('td');
+        } else if (e.which === key.up) {
+          to = appVM.findCellUp(e.target);
+        } else if (e.which === key.down) {
+          to = appVM.findCellDown(e.target);
+        }
+      } else if (e.which === key.enter && !(e.shiftKey || e.altKey || e.metaKey)) {
+        to = appVM.findCellDown(e.target);
+        if (!to) {
+          appVM.addrow();
+          to = appVM.findCellDown(e.target);
+        }
+      } else {
+        // un-recognised key combo
+        return true;
+      }
+      
+      if (to) {
+        appVM.moveTo($(to));
+        e.preventDefault();
+      }
+    });
+    
+
+  </script>
+  
+  
+  <style type="text/css">
+    table {
+      border: 1px solid #999;
+      border-collapse:collapse;
+      width: 300px;
+    }
+    
+    th {
+      background-color: #eeeeee;
+    }
+    
+    .cell {
+      padding: 4px;
+      border: 1px solid #999;
+      overflow: auto;
+      
+      min-width: 100px;
+      max-width: 100px;
+    }
+    
+    .widecell {
+      min-width: 200px;
+      max-width: 400px;
+    }
+    
+  </style>
+  
+</body>
+</html>
