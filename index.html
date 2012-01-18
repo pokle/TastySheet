@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Editable table</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Gratling</title>
 </head>
 <body>
-  <h1>HTML5 contenteditable table with spreadsheet like navigation</h2>
-  <p>Focus on a cell, and then use spreadsheet like keys to move around - albeit while holding
-    down either CONTROL or COMMAND (Apple)</p>
-  <p>ENTER also moves down, with the added benefit of creating more rows
-    when you hit the end</p>
-  <p>Also try TAB, and SHIFT-TAB to move horizontally</p>
+  <h1>Gratling</h2>
+  <dt>Move around<dt>
+    <dd>CONTROL ← → ↑ ↓</dd>
+    <dd>COMMAND ← → ↑ ↓</dd>
+  <dt>Move up/down, and add rows at the bottom</dt>
+    <dd>ENTER, SHIFT-ENTER</dd>
+  <dt>Move right/left</dt>
+    <dd>TAB, SHIFT-TAB</dd>
 
   <table contenteditable="false">
     <thead contenteditable="false">
@@ -21,7 +24,7 @@
       <tr data-bind="foreach: $root.columns">
           <td>
             <!-- ko if: wide -->
-            <textarea class="cell" tabindex="0" data-bind="value: $parent[id], text: $parent[id]"></textarea>
+            <textarea class="cell widecell" tabindex="0" data-bind="value: $parent[id], text: $parent[id]"></textarea>
             <!-- /ko -->
             <!-- ko if: !wide -->
             <input class="cell" tabindex="0" data-bind="if: !wide, value: $parent[id]"/>
