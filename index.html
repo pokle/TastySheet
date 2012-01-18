@@ -23,12 +23,19 @@
     <tbody data-bind="foreach: rows">
       <tr data-bind="foreach: $root.columns">
           <td>
-            <!-- ko if: wide -->
-            <textarea class="cell widecell" tabindex="0" data-bind="value: $parent[id], text: $parent[id]"></textarea>
+
+            <!-- ko if: type == 'textarea' -->
+            <textarea class="cell" tabindex="0" data-bind="value: $parent[id], text: $parent[id]"></textarea>
             <!-- /ko -->
-            <!-- ko if: !wide -->
-            <input class="cell" tabindex="0" data-bind="if: !wide, value: $parent[id]"/>
+
+            <!-- ko if: type == 'text' -->
+            <input class="cell" type="text" tabindex="0" data-bind="value: $parent[id]"/>
             <!-- /ko -->
+
+            <!-- ko if: type == 'number' -->
+            <input class="cell" type="number" tabindex="0" data-bind="value: $parent[id]"/>
+            <!-- /ko -->
+
           </td>
       </tr>
     </tbody>
@@ -42,9 +49,9 @@
   <script type="text/javascript">
     var appVM = {
       columns: ko.observableArray([
-        {id: 'title', wide: true}, 
-        {id: 'owner', wide: false}, 
-        {id: 'estimate', wide: false}
+        {id: 'title',    type: 'text'}, 
+        {id: 'owner',    type: 'text'}, 
+        {id: 'estimate', type: 'number'}
       ]),
       rows: ko.observableArray([
         {title: "Brush your teeth", owner: "Tushar", estimate: 55},
@@ -126,25 +133,32 @@
     table {
       border: 1px solid #999;
       border-collapse:collapse;
-      width: 300px;
     }
     
     th {
       background-color: #eeeeee;
     }
-    
-    .cell {
-      padding: 4px;
-      border: 1px solid #999;
-      overflow: auto;
-      
-      min-width: 100px;
-      max-width: 100px;
+
+    td {
+      border: 1px dotted #999;
+      margin: 0;
+      padding: 0;
     }
     
-    .widecell {
-      min-width: 200px;
-      max-width: 400px;
+    .cell {
+      margin: 0px;
+      padding: 0px;
+      display: block;
+/*      outline: none;*/
+      border: none;
+    }
+    
+    textarea.cell {
+/*      resize: none;*/
+    }
+    
+    input[type="number"].cell {
+      text-align: right;
     }
     
   </style>
