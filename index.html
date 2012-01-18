@@ -17,11 +17,15 @@
         <th data-bind="text: id"></th>
       </tr>
     </thead>
-    <tbody data-bind="foreach: rows" keyup="alert('a')">
+    <tbody data-bind="foreach: rows">
       <tr data-bind="foreach: $root.columns">
-          <td class="cell" contenteditable="true" tabindex="0" 
-               data-bind="text: $parent[id], 
-                          css: { widecell: wide }">
+          <td>
+            <!-- ko if: wide -->
+            <textarea class="cell" tabindex="0" data-bind="value: $parent[id], text: $parent[id]"></textarea>
+            <!-- /ko -->
+            <!-- ko if: !wide -->
+            <input class="cell" tabindex="0" data-bind="if: !wide, value: $parent[id]"/>
+            <!-- /ko -->
           </td>
       </tr>
     </tbody>
@@ -49,7 +53,7 @@
       },
       moveTo: function(to) {
         if (to.length > 0) {
-          to.get(0).focus();
+          to.children().get(0).focus();
           appVM.selectCurrentCell();
         }
         return false;
@@ -58,12 +62,12 @@
         document.execCommand('selectAll', false, null);
       },
       findCellUp: function(from) {
-        var column = $(from).prevAll('td').length;
-        return $(from).parent('tr').prev('tr').children('td').get(column);
+        var column = $(from).parent().prevAll('td').length;
+        return $(from).parent().parent('tr').prev('tr').children('td').get(column);
       },
       findCellDown: function(from) {
-        var column = $(from).prevAll('td').length;
-        return $(from).parent('tr').next('tr').children('td').get(column);
+        var column = $(from).parent().prevAll('td').length;
+        return $(from).parent().parent('tr').next('tr').children('td').get(column);
       }
     };
     ko.applyBindings(appVM);
@@ -76,6 +80,7 @@
     
     $('.cell').live('click', function(e) {
       appVM.selectCurrentCell();
+      e.preventDefault();
     });
 
     $('.cell').live('keydown', function(e) {
@@ -85,9 +90,9 @@
         setTimeout(appVM.selectCurrentCell, 0);
       } else if (e.metaKey || e.ctrlKey) {
         if (e.which === key.right) {
-          to = $(e.target).next('td');
+          to = $(e.target).parent().next('td');
         } else if (e.which === key.left) {
-          to = $(e.target).prev('td');
+          to = $(e.target).parent().prev('td');
         } else if (e.which === key.up) {
           to = appVM.findCellUp(e.target);
         } else if (e.which === key.down) {
