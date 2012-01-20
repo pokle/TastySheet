@@ -120,6 +120,14 @@
         if (appVM.editing()) {
           if (e.which === key.enter) {
             appVM.endEditing();
+
+            // Move down to edit the next cell
+            to = appVM.findCellDown(e.target);
+            if (!to) {
+              appVM.addrow();
+              to = appVM.findCellDown(e.target);
+            }
+            
           } else if (e.which === key.escape) {
             // revert changes
             $(e.target).val(appVM.undo);
