@@ -113,11 +113,15 @@
         } else if (e.which === key.down) {
           to = appVM.findCellDown(e.target);
         }
-      } else if (e.which === key.enter && !(e.shiftKey || e.altKey || e.metaKey)) {
-        to = appVM.findCellDown(e.target);
-        if (!to) {
-          appVM.addrow();
+      } else if (e.which === key.enter && !(e.altKey || e.metaKey)) {
+        if (e.shiftKey) {
+          to = appVM.findCellUp(e.target);
+        } else {
           to = appVM.findCellDown(e.target);
+          if (!to) {
+            appVM.addrow();
+            to = appVM.findCellDown(e.target);
+          }
         }
       } else {
         // un-recognised key combo
