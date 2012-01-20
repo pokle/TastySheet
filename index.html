@@ -6,13 +6,18 @@
 </head>
 <body>
   <h1>TastySheet</h2>
-  <dt>Move around<dt>
-    <dd>CONTROL ← → ↑ ↓</dd>
-    <dd>COMMAND ← → ↑ ↓</dd>
-  <dt>Move up/down, and add rows at the bottom</dt>
-    <dd>ENTER, SHIFT-ENTER</dd>
-  <dt>Move right/left</dt>
-    <dd>TAB, SHIFT-TAB</dd>
+    
+  <aside class="keyboard">
+    <dt>Move around<dt>
+      <dd>CONTROL ← → ↑ ↓</dd>
+      <dd>COMMAND ← → ↑ ↓</dd>
+    <dt>Move up/down, and add rows at the bottom</dt>
+      <dd>ENTER, SHIFT-ENTER</dd>
+    <dt>Move right/left</dt>
+      <dd>TAB, SHIFT-TAB</dd>
+  </aside>
+
+  State: <span data-bind="text: editing"></span>
 
   <div id="dynamic" style="display: none">
 
@@ -52,16 +57,23 @@
   
   <script type="text/javascript">
     var appVM = {
+      
       columns: ko.observableArray([
         {id: 'title',    type: 'text'}, 
         {id: 'owner',    type: 'text'}, 
         {id: 'estimate', type: 'number'}
       ]),
+      
       rows: ko.observableArray([
         {title: "Brush your teeth", owner: "Tushar", estimate: 55},
         {title: "Stretch your back", owner: "Sergey", estimate: 43},
         {title: "Sell your app", owner: "Tushar", estimate: 3},
       ]),
+      
+      editing: ko.observable(false),
+      editTarget: null,
+      undo: '', // Value before the edit
+      
       addrow: function(title) {
         if (!title) title = '<title>';
         appVM.rows.push({title: ko.observable(title), owner: "<owner>", stage: 'start'});
@@ -83,7 +95,84 @@
       findCellDown: function(from) {
         var column = $(from).parent().prevAll('td').length;
         return $(from).parent().parent('tr').next('tr').children('td').get(column);
+      },
+      
+      startEditing: function(target) {
+        appVM.editing(true);
+        appVM.editTarget = target;
+        appVM.undo = $(target).val();
+        $(target).addClass('edit');
+      },
+      
+      endEditing: function() {
+        if (appVM.editing()) {
+          $(appVM.editTarget).removeClass('edit');
+          appVM.editing(false);
+          appVM.editTarget = null;
+        }
+      },
+      
+      onCellKeyDown: function(e) {
+        var to;
+
+        console.log(e.which);
+
+        if (appVM.editing()) {
+          if (e.which === key.enter) {
+            appVM.endEditing();
+          } else if (e.which === key.escape) {
+            // revert changes
+            $(e.target).val(appVM.undo);
+            appVM.endEditing();
+          }
+        } else {
+          // Navigating
+          
+          if (e.which === key.right) {
+            to = $(e.target).parent().next('td');
+          } else if (e.which === key.left) {
+            to = $(e.target).parent().prev('td');
+          } else if (e.which === key.up) {
+            to = appVM.findCellUp(e.target);
+          } else if (e.which === key.down) {
+            to = appVM.findCellDown(e.target);
+          } else if (e.which === key.tab) {
+            // Allow default tab, shift-tab behaviour, but select cell afterwards
+            setTimeout(appVM.selectCurrentCell, 0);
+          } else if (e.which === key.enter) {
+            appVM.startEditing(e.target);
+          } else {
+            appVM.startEditing(e.target);
+          }
+        }
+
+        // // in both states
+        // if (e.which === key.enter && !(e.altKey || e.metaKey)) {
+        //   if (e.shiftKey) {
+        //     to = appVM.findCellUp(e.target);
+        //   } else {
+        //     to = appVM.findCellDown(e.target);
+        //     if (!to) {
+        //       appVM.addrow();
+        //       to = appVM.findCellDown(e.target);
+        //     }
+        //   }
+        // }
+
+        
+        if (to) {
+          appVM.moveTo($(to));
+          e.preventDefault();
+        }
+        
+      },
+      
+      onCellClick: function(e) {
+        appVM.endEditing();
+        appVM.selectCurrentCell();
+        e.preventDefault();
       }
+      
     };
     ko.applyBindings(appVM);
 
@@ -91,51 +180,18 @@
     // Keyboard events
     //
 
-    var key = { left: 37, right: 39, up: 38, down: 40, tab: 9, enter: 13};
+    var key = { left: 37, right: 39, up: 38, down: 40, tab: 9, enter: 13, escape: 27};
     
     $('.cell').live('click', function(e) {
-      appVM.selectCurrentCell();
-      e.preventDefault();
+      return appVM.onCellClick(e);
     });
 
     $('.cell').live('keydown', function(e) {
-      var to;
-      if (e.which === key.tab) {
-        // Allow default tab, shift-tab behaviour, but select cell afterwards
-        setTimeout(appVM.selectCurrentCell, 0);
-      } else if (e.metaKey || e.ctrlKey) {
-        if (e.which === key.right) {
-          to = $(e.target).parent().next('td');
-        } else if (e.which === key.left) {
-          to = $(e.target).parent().prev('td');
-        } else if (e.which === key.up) {
-          to = appVM.findCellUp(e.target);
-        } else if (e.which === key.down) {
-          to = appVM.findCellDown(e.target);
-        }
-      } else if (e.which === key.enter && !(e.altKey || e.metaKey)) {
-        if (e.shiftKey) {
-          to = appVM.findCellUp(e.target);
-        } else {
-          to = appVM.findCellDown(e.target);
-          if (!to) {
-            appVM.addrow();
-            to = appVM.findCellDown(e.target);
-          }
-        }
-      } else {
-        // un-recognised key combo
-        return true;
-      }
-      
-      if (to) {
-        appVM.moveTo($(to));
-        e.preventDefault();
-      }
+      return appVM.onCellKeyDown(e);
     });
 
     var i;
-    for(i=0; i<100; i++) {
+    for(i=0; i<10; i++) {
       appVM.addrow('title' + i);
     }
 
@@ -167,6 +223,12 @@
 /*      outline: none;*/
       border: none;
       font-size: 16pt;
+      
+      background-color: lightgrey;
+    }
+    
+    .cell.edit {
+      background-color: white;
     }
     
     textarea.cell {
@@ -175,6 +237,13 @@
     
     input[type="number"].cell {
       text-align: right;
+    }
+    
+    aside.keyboard {
+      position: fixed; top: 0; right: 0;
+      background-color: #aaa;
+      padding: 15px;
+      border: 1px solid #999;
     }
     
   </style>
