@@ -14,34 +14,38 @@
   <dt>Move right/left</dt>
     <dd>TAB, SHIFT-TAB</dd>
 
-  <table contenteditable="false">
-    <thead contenteditable="false">
-      <tr data-bind="foreach: columns">
-        <th data-bind="text: id"></th>
-      </tr>
-    </thead>
-    <tbody data-bind="foreach: rows">
-      <tr data-bind="foreach: $root.columns">
-          <td>
+  <div id="dynamic" style="display: none">
 
-            <!-- ko if: type == 'textarea' -->
-            <textarea class="cell" tabindex="0" data-bind="value: $parent[id], text: $parent[id]"></textarea>
-            <!-- /ko -->
+    <table contenteditable="false">
+      <thead contenteditable="false">
+        <tr data-bind="foreach: columns">
+          <th data-bind="text: id"></th>
+        </tr>
+      </thead>
+      <tbody data-bind="foreach: rows">
+        <tr data-bind="foreach: $root.columns">
+            <td>
 
-            <!-- ko if: type == 'text' -->
-            <input class="cell" type="text" tabindex="0" data-bind="value: $parent[id]"/>
-            <!-- /ko -->
+              <!-- ko if: type == 'textarea' -->
+              <textarea class="cell" tabindex="0" data-bind="value: $parent[id], text: $parent[id]"></textarea>
+              <!-- /ko -->
 
-            <!-- ko if: type == 'number' -->
-            <input class="cell" type="number" tabindex="0" data-bind="value: $parent[id]"/>
-            <!-- /ko -->
+              <!-- ko if: type == 'text' -->
+              <input class="cell" type="text" tabindex="0" data-bind="value: $parent[id]"/>
+              <!-- /ko -->
 
-          </td>
-      </tr>
-    </tbody>
-  </table>
-  <button data-bind="click: addrow">Add</button>
+              <!-- ko if: type == 'number' -->
+              <!-- <input class="cell" type="number" tabindex="0" data-bind="value: $parent[id]"/> -->
+              <input class="cell" type="text" pattern="[0-9]*" tabindex="0" data-bind="value: $parent[id]"/>
+              <!-- /ko -->
 
+            </td>
+        </tr>
+      </tbody>
+    </table>
+    <button data-bind="click: addrow">Add</button>
+
+  </div>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript" charset="utf-8"></script>
   <script src="http://cloud.github.com/downloads/SteveSanderson/knockout/knockout-2.0.0.js" type="text/javascript" charset="utf-8"></script>
@@ -58,8 +62,9 @@
         {title: "Stretch your back", owner: "Sergey", estimate: 43},
         {title: "Sell your app", owner: "Tushar", estimate: 3},
       ]),
-      addrow: function() {
-        appVM.rows.push({title: ko.observable("<title>"), owner: "<owner>", stage: 'start'});
+      addrow: function(title) {
+        if (!title) title = '<title>';
+        appVM.rows.push({title: ko.observable(title), owner: "<owner>", stage: 'start'});
       },
       moveTo: function(to) {
         if (to.length > 0) {
@@ -124,7 +129,13 @@
         e.preventDefault();
       }
     });
-    
+
+    var i;
+    for(i=0; i<100; i++) {
+      appVM.addrow('title' + i);
+    }
+
+    $('#dynamic').show('slow');
 
   </script>
   
@@ -151,6 +162,7 @@
       display: block;
 /*      outline: none;*/
       border: none;
+      font-size: 16pt;
     }
     
     textarea.cell {
