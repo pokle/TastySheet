@@ -121,13 +121,17 @@
           if (e.which === key.enter) {
             appVM.endEditing();
 
-            // Move down to edit the next cell
-            to = appVM.findCellDown(e.target);
-            if (!to) {
-              appVM.addrow();
+            if (e.shiftKey) {
+              // Move up 
+              to = appVM.findCellUp(e.target);
+            } else {
+              // Move down to edit the next cell
               to = appVM.findCellDown(e.target);
+              if (!to) {
+                appVM.addrow();
+                to = appVM.findCellDown(e.target);
+              }
             }
-            
           } else if (e.which === key.escape) {
             // revert changes
             $(e.target).val(appVM.undo);
@@ -154,20 +158,6 @@
           }
         }
 
-        // // in both states
-        // if (e.which === key.enter && !(e.altKey || e.metaKey)) {
-        //   if (e.shiftKey) {
-        //     to = appVM.findCellUp(e.target);
-        //   } else {
-        //     to = appVM.findCellDown(e.target);
-        //     if (!to) {
-        //       appVM.addrow();
-        //       to = appVM.findCellDown(e.target);
-        //     }
-        //   }
-        // }
-
-        
         if (to) {
           appVM.moveTo($(to));
           e.preventDefault();
