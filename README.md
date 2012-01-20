@@ -1,4 +1,4 @@
-Contenteditable table
+Gratling the HTML5 contenteditable table
 ====
 
 A little experiment to see if HTML5 has come far enough to create editable tables that behave like spreadsheets with respect to navigation.
