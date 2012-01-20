@@ -7,4 +7,4 @@ You can use the usual keys - ENTER, TAB, SHIFT-TAB to navigate. You can also use
 
 Knockoutjs rocks, and I've used it to pump data into the table, and organise my code using the MVVM pattern - but it isn't strictly required for this demo.
 
-See it in action at http://pokle.github.com/contenteditable-table/
+See it in action at http://pokle.github.com/gratling/
