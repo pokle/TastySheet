@@ -59,18 +59,21 @@
   
     var TastySheet = function(columns) {
       var self = this;
+
       self.columns = ko.observableArray(columns);
       self.rows = ko.observableArray();
+      
+      self.add = function(row) {
+        var rowVM = ko.mapping.fromJS(row);
+        self.rows.push(rowVM);
+      };
+
+      self.keydown =  function(column, event) {
+        console.log(self, column, event);
+      };
+      
     };
 
-    TastySheet.prototype.add = function(row) {
-      var rowVM = ko.mapping.fromJS(row);
-      this.rows.push(rowVM);
-    };
-    
-    TastySheet.prototype.keydown =  function(o, e) {
-      console.log(this, o, e);
-    };
     
     var appVM = new TastySheet([
       {prop: 'title',    type: 'text'}, 
@@ -81,8 +84,7 @@
     appVM.add({title: "Brush your teeth",  owner: "Tushar", estimate: 55});
     appVM.add({title: "Stretch your back", owner: "Sergey", estimate: 43});
     appVM.add({title: "Sell your app",     owner: "Tushar", estimate:  3});
-
-    
+    ko.applyBindings(appVM);
 
 /*
     {
@@ -191,7 +193,6 @@
     };
     
 */
-    ko.applyBindings(appVM);
 
     //
     // Keyboard events
