@@ -17,66 +17,82 @@
       <dd>TAB, SHIFT-TAB</dd>
   </aside>
 
-  State: <span data-bind="text: editing"></span>
-
   <div id="dynamic" style="display: none">
 
     <table contenteditable="false">
       <thead contenteditable="false">
         <tr data-bind="foreach: columns">
-          <th data-bind="text: id"></th>
+          <th data-bind="text: prop"></th>
         </tr>
       </thead>
       <tbody data-bind="foreach: rows">
         <tr data-bind="foreach: $root.columns">
-            <td>
+            <td data-bind="event: {keydown: $root.keydown}">
 
               <!-- ko if: type == 'textarea' -->
-              <textarea class="cell" tabindex="0" data-bind="value: $parent[id], text: $parent[id]"></textarea>
+              <textarea class="cell" tabindex="0" data-bind="value: $parent[prop], text: $parent[prop]"></textarea>
               <!-- /ko -->
 
               <!-- ko if: type == 'text' -->
-              <input class="cell" type="text" tabindex="0" data-bind="value: $parent[id]"/>
+              <input class="cell" type="text" tabindex="0" data-bind="value: $parent[prop]"/>
               <!-- /ko -->
 
               <!-- ko if: type == 'number' -->
               <!-- <input class="cell" type="number" tabindex="0" data-bind="value: $parent[id]"/> -->
-              <input class="cell" type="text" pattern="[0-9]*" tabindex="0" data-bind="value: $parent[id]"/>
+              <input class="cell" type="text" pattern="[0-9]*" tabindex="0" data-bind="value: $parent[prop]"/>
               <!-- /ko -->
 
             </td>
         </tr>
       </tbody>
     </table>
-    <button data-bind="click: addrow">Add</button>
+    <!-- <button data-bind="click: addrow">Add</button> -->
 
   </div>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript" charset="utf-8"></script>
-  <script src="http://cloud.github.com/downloads/SteveSanderson/knockout/knockout-2.0.0.js" type="text/javascript" charset="utf-8"></script>
+  <script src="lib/jquery-1.7.1.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="lib/knockout-2.0.0.js" type="text/javascript" charset="utf-8"></script>
+  <script src="lib/knockout.mapping-latest.js" type="text/javascript" charset="utf-8"></script>
   
   <script type="text/javascript">
-    var appVM = {
+  
+    var TastySheet = function(columns) {
+      var self = this;
+      self.columns = ko.observableArray(columns);
+      self.rows = ko.observableArray();
+    };
+
+    TastySheet.prototype.add = function(row) {
+      var rowVM = ko.mapping.fromJS(row);
+      this.rows.push(rowVM);
+    };
+    
+    TastySheet.prototype.keydown =  function(o, e) {
+      console.log(this, o, e);
+    };
+    
+    var appVM = new TastySheet([
+      {prop: 'title',    type: 'text'}, 
+      {prop: 'owner',    type: 'text'}, 
+      {prop: 'estimate', type: 'number'}
+    ]);
+    
+    appVM.add({title: "Brush your teeth",  owner: "Tushar", estimate: 55});
+    appVM.add({title: "Stretch your back", owner: "Sergey", estimate: 43});
+    appVM.add({title: "Sell your app",     owner: "Tushar", estimate:  3});
+
+    
+
+/*
+    {
       
-      columns: ko.observableArray([
-        {id: 'title',    type: 'text'}, 
-        {id: 'owner',    type: 'text'}, 
-        {id: 'estimate', type: 'number'}
-      ]),
-      
-      rows: ko.observableArray([
-        {title: "Brush your teeth", owner: "Tushar", estimate: 55},
-        {title: "Stretch your back", owner: "Sergey", estimate: 43},
-        {title: "Sell your app", owner: "Tushar", estimate: 3},
-      ]),
-      
-      editing: ko.observable(false),
-      editTarget: null,
+      // editing: ko.observable(false),
+      // editTarget: null,
       undo: '', // Value before the edit
       
       addrow: function(title) {
         if (!title) title = '<title>';
-        appVM.rows.push({title: ko.observable(title), owner: "<owner>", stage: 'start'});
+        appVM.rows.push({title: ko.observable(title), owner: "<owner>", stage: 'start', editing: ko.observable(false)});
       },
       moveTo: function(to) {
         if (to.length > 0) {
@@ -98,18 +114,18 @@
       },
       
       startEditing: function(target) {
-        appVM.editing(true);
-        appVM.editTarget = target;
-        appVM.undo = $(target).val();
-        $(target).addClass('edit');
+        // appVM.editing(true);
+        // appVM.editTarget = target;
+        // appVM.undo = $(target).val();
+        // $(target).addClass('edit');
       },
       
       endEditing: function() {
-        if (appVM.editing()) {
-          $(appVM.editTarget).removeClass('edit');
-          appVM.editing(false);
-          appVM.editTarget = null;
-        }
+        // if (appVM.editing()) {
+        //   $(appVM.editTarget).removeClass('edit');
+        //   appVM.editing(false);
+        //   appVM.editTarget = null;
+        // }
       },
       
       onCellKeyDown: function(e) {
@@ -172,6 +188,8 @@
       }
       
     };
+    
+*/
     ko.applyBindings(appVM);
 
     //
@@ -180,18 +198,18 @@
 
     var key = { left: 37, right: 39, up: 38, down: 40, tab: 9, enter: 13, escape: 27};
     
-    $('.cell').live('click', function(e) {
-      return appVM.onCellClick(e);
-    });
+    // $('.cell').live('click', function(e) {
+    //   return appVM.onCellClick(e);
+    // });
+    // 
+    // $('.cell').live('keydown', function(e) {
+    //   return appVM.onCellKeyDown(e);
+    // });
 
-    $('.cell').live('keydown', function(e) {
-      return appVM.onCellKeyDown(e);
-    });
-
-    var i;
-    for(i=0; i<10; i++) {
-      appVM.addrow('title' + i);
-    }
+    // var i;
+    // for(i=0; i<10; i++) {
+    //   appVM.addrow('title' + i);
+    // }
 
     $('#dynamic').show('slow');
 
